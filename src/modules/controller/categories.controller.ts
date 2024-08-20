@@ -4,6 +4,7 @@ import {
   Post,
   Delete,
   Body,
+  Put,
   Param,
   BadRequestException,
   UseGuards,
@@ -11,6 +12,7 @@ import {
 import { CategoriesService } from '../service/categories.service';
 import { CreateCategoryDto } from '../dtos/create-category.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { UpdateCategoryDto } from '../dtos/update-category.dto';
 
 @Controller('categories')
 export class CategoriesController {
@@ -18,27 +20,32 @@ export class CategoriesController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  upsertCategory(@Body() createCategoryDto: CreateCategoryDto) {
-    return this.categoriesService.createOrUpdateCategoryOrSubcategory(
-      createCategoryDto,
-    );
+  insertCategory(@Body() createCategoryDto: CreateCategoryDto) {
+    return this.categoriesService.createCategory(createCategoryDto);
   }
 
-  @Get('all')
+  @Get()
   findAllCategories() {
     return this.categoriesService.findAllCategories();
   }
 
-  @Get()
+  @Get('/tree')
   getCategoryTree() {
     return this.categoriesService.getCategoryTree();
   }
 
-  @Get('/content/:id')
+  @Get(':id')
   async findSubcategoryContent(@Param('id') id: string) {
-      return  this.categoriesService.findSubcategoryContent(id);
-    }
-
+    return this.categoriesService.findSubcategoryContent(id);
+  }
+  @Put(':id')
+  @UseGuards(JwtAuthGuard)
+  async updateCategory(
+    @Param('id') id: string,
+    @Body() data: UpdateCategoryDto,
+  ) {
+    return this.categoriesService.updateCategory(id, data);
+  }
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   async deleteCategory(@Param('id') id: string) {
@@ -48,5 +55,4 @@ export class CategoriesController {
       throw new BadRequestException('Invalid ID format or not found');
     }
   }
-
 }
